@@ -6,7 +6,7 @@ pipeline {
             steps { echo "step 2" }
         }
         stage('Build & Test') {
-            steps { cho "step 3" }
+            steps { echo "step 3" }
         }
         stage('Deploy') {
             steps { echo "step 2" }
