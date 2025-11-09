@@ -1,15 +1,46 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'mvn_home'
+    }
+
     stages {
         stage('Checkout') {
-            steps { echo "step 2" }
+            steps {
+                echo 'Cloning repository from GitHub...'
+                git branch: 'main', credentialsId: '0b502bcd-f80c-41cd-94e8-6522a8f8dc7a', url: 'https://github.com/unmilansaha/my-app.git'
+            }
         }
-        stage('Build & Test') {
-            steps { echo "step 3" }
+
+        stage('Build') {
+            steps {
+                echo 'Building the project...'
+                sh 'mvn clean compile'
+            }
         }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                sh 'mvn test'
+            }
+        }
+
         stage('Deploy') {
-            steps { echo "step 2" }
+            steps {
+                echo 'Packaging for deployment...'
+                sh 'mvn package'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build completed successfully!'
+        }
+        failure {
+            echo '❌ Build failed. Check logs for details.'
         }
     }
 }
