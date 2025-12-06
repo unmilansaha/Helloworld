@@ -1,0 +1,490 @@
+🔥 PHASE-1 — Docker Explained in Interview Language
+
+When asked "What is Docker?", answer:
+
+Docker is a containerization platform that packages applications with their dependencies into lightweight, portable containers.
+Unlike VMs, containers share the host OS kernel, making them faster, smaller, and easier to deploy.
+
+Short version:
+
+Docker lets us run applications consistently across environments.
+
+Images vs Containers
+Term	Interview-friendly Definition
+Image	Blueprint/template (app + dependencies + runtime)
+Container	Running instance of an image
+Dockerfile	Script to build images
+Registry	Storage for images (DockerHub, ECR, GCR)
+Volume	Persistent storage for containers
+Network	Communication between containers
+🔥 PHASE-2 — Main Docker Commands You MUST Know
+
+List images:
+
+docker images
+
+
+Pull image:
+
+docker pull nginx
+
+
+Run a container:
+
+docker run -d -p 8080:80 nginx
+
+
+View running containers:
+
+docker ps
+
+
+Stop + remove containers:
+
+docker stop <id>
+docker rm <id>
+
+
+View logs:
+
+docker logs <container_id>
+
+
+Execute into container:
+
+docker exec -it <id> /bin/bash
+
+🔥 TASK — Run Nginx container locally
+
+Run this:
+
+docker run -d -p 8080:80 nginx
+docker ps
+
+
+Then open in browser:
+
+http://<EC2_PUBLIC_IP>:8080
+
+
+You should see Welcome to nginx!
+
+Reply with screenshot/output.
+
+🔥 PHASE-3 — Dockerfile (very important for interview)
+
+Create a simple app:
+
+mkdir docker-demo && cd docker-demo
+nano index.html
+
+
+Add:
+
+<h1>Hello from Docker!</h1>
+
+
+Now create Dockerfile:
+
+nano Dockerfile
+
+
+Paste:
+
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+
+
+Build image:
+
+docker build -t unmilan-web .
+
+
+Run:
+
+docker run -d -p 8081:80 unmilan-web
+
+
+Open:
+
+http://<EC2_PUBLIC_IP>:8081
+
+
+Now you built your own custom Docker image ✔
+This becomes your interview project story.
+
+🔥 PHASE-4 — Strong Interview Answer for Docker Experience
+
+You will answer like this:
+
+I use Docker to containerize applications.
+I build custom images using Dockerfile, run containers using docker run, expose ports, and debug issues via logs and exec.
+I also push images to registry and deploy them into Kubernetes clusters using Deployment + Service.
+This ensures portability and consistent environment across Dev, QA, and Prod.
+
+🔥 PHASE-5 — Docker Interview Questions
+
+Q1. Docker vs VM?
+
+Docker shares OS kernel → lightweight.
+VMs emulate entire OS → heavy but more isolation.
+
+Q2. How to persist data?
+
+Using volumes: docker volume create & mount using -v.
+
+Q3. How to reduce image size?
+
+Use lightweight base images (alpine), multi-stage builds, .dockerignore.
+
+Q4. How to troubleshoot failing container?
+
+docker logs <id>
+docker exec -it <id> sh
+docker inspect <id>
+
+
+Q5. How do you deploy Docker app to K8s?
+
+Build image → Push to registry → Reference in Deployment YAML.
+
+Your Turn — Complete Task 1
+
+Run:
+
+docker run -d -p 8080:80 nginx
+docker ps
+
+
+Reply with output.
+
+Once done → next step will be:
+
+Dockerfile → Build → Push to Docker Hub
+
+Then
+
+Deploy the same image into your Kubernetes cluster
+
+This will give you a full real DevOps workflow project.
+
+Reply with:
+
+✔ Output screenshot
+or
+💬 "Done. Proceed next."
+
+You said:
+"Done. Proceed next.
+ChatGPT said:
+
+Perfect. Now we move to Docker Practical Phase-2, where you will:
+
+✔ Build your own Docker Image
+✔ Push it to Docker Hub
+✔ Deploy it into Kubernetes using Deployment + Service
+→ This becomes a real project you can confidently talk about in the interview.
+STEP-1 – Create a Simple Web App
+mkdir docker-app && cd docker-app
+nano index.html
+
+
+Add content:
+
+<h1>Welcome to Docker - Deploying via Kubernetes | by Unmilan</h1>
+
+
+Save → CTRL + O → Enter → CTRL + X
+
+STEP-2 – Create Dockerfile
+nano Dockerfile
+
+
+Paste:
+
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
+
+
+Save & exit.
+
+STEP-3 – Build Docker Image
+docker build -t unmilan-webapp:v1 .
+
+
+Check image:
+
+docker images
+
+STEP-4 – Run Image Locally to Test
+docker run -d -p 8081:80 unmilan-webapp:v1
+docker ps
+
+
+Open browser:
+
+http://<EC2_PUBLIC_IP>:8081
+
+
+You should see your custom message.
+
+STEP-5 – Tag Image for Docker Hub
+
+Login:
+
+docker login
+
+
+(Use Docker Hub username + password)
+
+Tag it:
+
+docker tag unmilan-webapp:v1 <DOCKER_USERNAME>/unmilan-webapp:v1
+
+
+Push to Docker Hub:
+
+docker push <DOCKER_USERNAME>/unmilan-webapp:v1
+
+
+When successful, your image will appear publicly on Docker Hub.
+
+STEP-6 – Deploy Into Kubernetes Cluster
+
+Create deployment yaml:
+
+nano deploy.yml
+
+
+Paste:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unmilan-webapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: unmilan-webapp
+  template:
+    metadata:
+      labels:
+        app: unmilan-webapp
+    spec:
+      containers:
+      - name: web
+        image: <DOCKER_USERNAME>/unmilan-webapp:v1
+        ports:
+        - containerPort: 80
+
+
+Apply:
+
+kubectl apply -f deploy.yml
+kubectl get pods
+
+Expose it using a service
+kubectl expose deployment unmilan-webapp --type=NodePort --port=80
+kubectl get svc
+
+
+You’ll get a NodePort → example:
+
+30080
+
+
+Access:
+
+http://<EC2_PUBLIC_IP>:30080
+
+🎉 Once this is done you have a FULL DevOps Workflow Project:
+
+Dockerfile → Build Image → Push to Registry → Deploy to Kubernetes → Expose Service
+
+This is an actual resume + interview highlight project.
+
+You will now say in interview:
+
+I containerized an Nginx application using Docker, created a custom image, pushed it to Docker Hub, and deployed it into a Kubernetes cluster using Deployment & Service objects.
+I verified scale by increasing replicas and accessed the application through NodePort.
+This gave me hands-on experience with Docker → Registry → K8s deployment workflow.
+
+🔥 Sounds like 3–5 years real experience.
+
+Reply with:
+
+✔ Deployment done
+or
+Paste output of:
+
+docker images
+kubectl get pods
+kubectl get svc
+
+
+Then we move to:
+
+Kubernetes Advanced Phase
+
+Scaling
+
+Rolling updates
+
+ConfigMap/Secret
+
+Liveness/Readiness probes
+
+HPA auto-scaling
+
+You're doing excellent — now it gets even better. 🚀
+
+You said:
+yes
+ChatGPT said:
+
+Great — since the build & push workflow is completed and you confirmed to proceed, we now move to the Advanced Kubernetes Phase, which will make your interview answers very strong and practical.
+
+We will cover next:
+
+🔥 Part-1: Rollout, Scaling & Zero-Downtime Deployments
+🔥 Part-2: ConfigMap + Secret
+🔥 Part-3: Liveness & Readiness Probes
+🔥 Part-4: Auto-Scaling (HPA)
+🔥 Part-5: Interview Questions + Real Scenarios
+📍 Part-1 — Scaling & Rolling Updates
+Scale Deployment
+kubectl scale deployment unmilan-webapp --replicas=5
+kubectl get pods -o wide
+
+Rollout status
+kubectl rollout status deployment unmilan-webapp
+
+Update image (simulate new version)
+kubectl set image deployment/unmilan-webapp web=<DOCKER_USERNAME>/unmilan-webapp:v2
+
+
+If something goes wrong, rollback:
+
+kubectl rollout undo deployment unmilan-webapp
+
+Interview way to answer:
+
+Kubernetes supports rolling updates to deploy new versions without downtime.
+We can update a deployment image and monitor rollout status.
+If issues occur, we rollback quickly using kubectl rollout undo.
+
+📍 Part-2 — ConfigMap & Secret (must know for interviews)
+Create ConfigMap
+kubectl create configmap app-config --from-literal=ENV=PROD
+kubectl get configmaps
+
+
+Mount config inside Pod:
+
+env:
+- name: ENV
+  valueFrom:
+    configMapKeyRef:
+      name: app-config
+      key: ENV
+
+Secret (Base64 encoded)
+kubectl create secret generic app-secret --from-literal=PASSWORD=admin123
+kubectl get secrets
+
+
+Use in Pod:
+
+env:
+- name: PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: app-secret
+      key: PASSWORD
+
+📍 Part-3 — Liveness & Readiness Probes (very important)
+
+Add inside your Deployment under containers::
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+Interview answer:
+
+Liveness probe restarts a pod if container hangs.
+Readiness probe ensures traffic isn’t sent until app is ready.
+They improve application reliability & avoid failed user requests.
+
+📍 Part-4 — Horizontal Pod Autoscaler (HPA)
+
+Install metrics server first:
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+
+Then create HPA:
+
+kubectl autoscale deployment unmilan-webapp --cpu-percent=50 --min=2 --max=8
+kubectl get hpa
+
+Load test
+kubectl run load --image=busybox --restart=Never -it -- /bin/sh
+while true; do wget -q -O- http://unmilan-webapp:80 > /dev/null; done
+
+
+HPA should increase replica count.
+
+Interview answer:
+
+HPA automatically scales pods based on CPU/Memory or custom metrics.
+This is important for SRE reliability & handling traffic spikes.
+
+📍 Part-5 — Kubernetes Interview Q&A
+
+Q1. How does Kubernetes handle failures?
+
+ReplicaSets reschedule pods. Liveness probes restart unhealthy pods.
+
+Q2. How do you debug a failing pod?
+
+kubectl logs <pod>
+kubectl describe pod <pod>
+kubectl get events
+
+
+Q3. What happens when a node goes down?
+
+Pods rescheduled to healthy nodes if resources available.
+
+Q4. How do Services work?
+
+They use label selectors to route traffic to backend pods.
+
+Q5. Difference between Deployment, StatefulSet, DaemonSet?
+
+Deployment stateless apps
+StatefulSet DB/state apps
+DaemonSet runs one pod per node (monitoring/logging)
+
+You are now strong in:
+✔ Docker → Kubernetes Deployment
+✔ Scaling, Updates, Rollback
+✔ ConfigMap/Secret
+✔ Probes
+✔ Autoscaling
+✔ Real interview talking points
+
+Now you truly sound like an engineer who worked on Kubernetes applications.

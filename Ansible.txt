@@ -1,0 +1,177 @@
+erfect — Ansible Phase starts now, and we’ll build your answers exactly like a professional SRE/DevOps engineer with real experience.
+
+By end of this training you will be able to confidently say:
+
+I write playbooks, roles, and automation for deployments, configuration, patching, user management, and server provisioning using Ansible.
+I use inventory files to target hosts, use variables, handlers for service restarts, templates (Jinja2), and integrate Ansible with CI/CD.
+
+PHASE-1 — What is Ansible (Interview Answer)
+
+When interview asks "What is Ansible?", you speak:
+
+Ansible is an agentless configuration management and automation tool used for provisioning servers, installing packages, configuring applications, and enabling DevOps workflows.
+It uses SSH to connect to remote machines and run tasks using YAML playbooks.
+
+Short version:
+
+Ansible automates server configuration without installing agents.
+
+Core Building Blocks
+Component	Meaning
+Inventory	List of servers
+Playbook	YAML automation file
+Task	A single action (install pkg, copy file)
+Module	Pre-built function (yum, service, copy)
+Handler	Runs when notified (restart service)
+Variable	Dynamic values
+Role	Structured automation reusable for scale
+PHASE-2 — Your First Inventory & Playbook
+
+Create inventory file:
+
+nano inventory.ini
+
+
+Example:
+
+[webservers]
+server1 ansible_host=<IP1> ansible_user=ec2-user
+server2 ansible_host=<IP2> ansible_user=ec2-user
+
+
+Create playbook to install nginx:
+
+nano install-nginx.yml
+
+
+Paste:
+
+---
+- name: Install and start Nginx
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install nginx
+      package:
+        name: nginx
+        state: present
+
+    - name: Start and enable nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+
+Run:
+
+ansible-playbook -i inventory.ini install-nginx.yml
+
+
+💡 This becomes interview story:
+
+I maintained Ansible playbooks to install packages like nginx, deploy configs, restart services using handlers, and automate provisioning across multiple servers via inventory groups.
+
+PHASE-3 — Add Handler + Template (More Experience)
+Create template:
+nano nginx.conf.j2
+
+server {
+  listen 80;
+  server_name {{ inventory_hostname }};
+  location / {
+    root /var/www/html;
+    index index.html;
+  }
+}
+
+Playbook using template:
+---
+- name: Configure nginx using template
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Copy nginx config
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: restart nginx
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+INTERVIEW GOLD POINT
+
+Handlers are only executed when a change occurs.
+This prevents unnecessary restarts & ensures efficient automation.
+
+PHASE-4 — Ansible Role Structure
+ansible-galaxy init webserver-role
+
+
+Folder structure created:
+
+webserver-role/
+├─ tasks/
+├─ handlers/
+├─ templates/
+├─ vars/
+└─ defaults/
+
+
+Run using:
+
+- hosts: webservers
+  roles:
+    - webserver-role
+
+
+This is professional level usage.
+
+PHASE-5 — Interview Q&A (Must Learn)
+
+Q1. Push or Pull model?
+
+Ansible is push-based, unlike Chef/Puppet which pull configs.
+
+Q2. How does Ansible connect to servers?
+
+SSH (agentless).
+
+Q3. Ad-hoc command examples:
+
+ansible all -i inventory.ini -m ping
+ansible webservers -m yum -a "name=git state=present"
+ansible webservers -m copy -a "src=file dest=/tmp/"
+
+
+Q4. Difference between Playbook & Role?
+
+Playbook = direct automation.
+Role = reusable structured automation.
+
+Q5. How do we store secrets?
+
+Using Ansible Vault.
+
+ansible-vault encrypt secrets.yml
+
+Your Hands-on Task
+Step 1:
+
+Create inventory & playbook and run:
+
+ansible-playbook -i inventory.ini install-nginx.yml
+
+Step 2:
+
+Then create template and handler playbook.
+
+Reply with:
+
+✔ Task Completed
+or paste output (errors okay — I will fix)
+

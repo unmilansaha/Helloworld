@@ -1,0 +1,113 @@
+Argo CD is working as it will make connection between kubernetex and github gitops , we dont need ci cd for this.
+promethius is a time serius data base which collects data from kubernetes 
+helm is a kubernetes package manager manifest files which is need to be deployed in kubernetes 
+like before installing Promethius
+
+
+datasources and dashboard --> grafana
+
+I’ve used Prometheus for metrics collection & alerting, and Grafana for visualization & dashboarding.
+I worked with kube-prometheus-stack using Helm, which deploys Prometheus, Grafana, Alertmanager, node-exporter and kube-state-metrics.
+I’ve monitored CPU, memory, pod health, request rate, and configured NodePorts/Port-forward to access dashboards.
+This helped me understand observability, alerting and proactive reliability — key parts of SRE work.
+
+Term	Simple Explanation (what you say)
+Prometheus	Metrics-based monitoring tool (time-series)
+Grafana	Dashboard visualization for Prometheus metrics
+Pull Model	Prometheus fetches metrics from targets
+Exporters	Tools exposing metrics /metrics endpoint
+Alertmanager	Sends alerts to Email/Slack/PagerDuty
+PromQL	Query language for metrics
+Node Exporter	Collects OS-level metrics
+ServiceMonitor	Tells Prometheus what to scrape in k8s
+
+Q1. What is Prometheus?
+
+Prometheus is a time-series metrics monitoring and alerting system.
+It scrapes metrics using a pull model, stores them in TSDB, and queries data via PromQL.
+
+Q3. How does Prometheus collect metrics?
+
+Prometheus scrapes targets at /metrics endpoints.
+
+Q4. What are exporters?
+
+Exporters expose application/system metrics in Prometheus format.
+Example: Node Exporter, MySQL exporter, Blackbox exporter.
+
+groups:
+- name: system-alerts
+  rules:
+  - alert: HighCPUUsage
+    expr: rate(container_cpu_usage_seconds_total[5m]) > 0.80
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU detected"
+      description: "CPU usage is above 80% for more than 2 minutes on {{ $labels.instance }}"
+
+# CPU usage
+rate(container_cpu_usage_seconds_total[5m])
+
+# Pod restarts
+sum(kube_pod_container_status_restarts_total)
+
+# 5xx error rate
+rate(http_requests_total{status="500"}[5m])
+
+
+
+Q6. How alerts work?
+
+Prometheus rules trigger conditions → Alertmanager routes alerts → Slack/Email/PagerDuty.
+
+Q7. How do you access Grafana?
+
+Port-forward service or expose via NodePort/LoadBalancer.
+
+Example:
+
+kubectl port-forward svc/kind-prometheus-grafana -n monitoring 3000:80
+I deployed kube-prometheus-stack using Helm in a Kubernetes environment.
+It installed Prometheus, Grafana, Alertmanager, node-exporter and kube-state-metrics.
+I exposed Grafana using NodePort/port-forward and built dashboards to monitor CPU, memory, pod restarts & request rate.
+I used PromQL to track spikes and configured alerts for high CPU usage threshold.
+This gave me clarity on proactive monitoring and incident detection as an SRE.”
+
+Scenario 1:
+
+CPU is high on one node, what do you do?
+
+Answer:
+
+Open Grafana dashboard → Check CPU usage panel
+Use PromQL to find top pods
+Scale deployment or analyze workload logs
+If recurring, set HPA or optimize resource limits
+
+Scenario 2:
+
+Application latency suddenly increased
+
+Check rate(http_request_duration_seconds_bucket[5m])
+Look for errors spike / traffic surge
+Check node/pod resource usage
+Rollback recent deployment if needed
+Alerts notify if SLO breach
+
+Scenario 3:
+
+Too many alerts firing
+
+Tune thresholds
+Add cool-down
+Create noise-reduction rules
+Use SLO-driven alerts, not raw metrics
+
+To understand usage pattern over time, we need a per second change — that's what rate() does:
+
+Because metrics are often collected per container, per pod, per core, per instance, etc.
+We use sum() to aggregate values together.
+
+Examples:

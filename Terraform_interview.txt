@@ -1,0 +1,163 @@
+Excellent — since you've completed the Ansible basics and deployment playbook successfully, we'll now move to the Terraform Phase, where we will create a real provisioning + configuration automation pipeline that sounds like solid SRE/DevOps experience in an interview.
+
+🚀 Terraform Phase Start
+
+Goal:
+You will build a workflow:
+
+Terraform → Provision EC2
+Ansible → Configure EC2 (install nginx/app)
+
+
+This becomes a high-value project for your resume and Geotab interview.
+
+🔥 Phase-1 — What is Terraform (Interview Answer)
+
+When asked "What is Terraform?" answer confidently:
+
+Terraform is an Infrastructure as Code (IaC) tool used to provision cloud infrastructure in a declarative way.
+It allows version-controlled, repeatable environment creation using HCL language and providers like AWS, Azure, GCP.
+
+Short version:
+
+Terraform automates infrastructure creation — servers, networks, IAM, S3, Kubernetes clusters, etc.
+
+🔥 Terraform Core Concepts
+Component	Explanation
+Provider	Cloud platform (AWS/GCP/Azure)
+Resource	Infrastructure component (EC2/SG/VPC)
+Module	Reusable resource blocks
+State file	Keeps track of infrastructure
+Variables	Dynamic input to config
+Output	Display info after apply
+🔥 Phase-2 — Create EC2 using Terraform
+
+Create working directory:
+
+mkdir tf-ec2 && cd tf-ec2
+nano main.tf
+
+
+Paste:
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "web" {
+  ami           = "ami-0c02fb55956c7d316" # Amazon Linux 2 AMI
+  instance_type = "t2.micro"
+  
+  tags = {
+    Name = "terraform-ec2"
+  }
+}
+
+Initialize Terraform
+terraform init
+
+
+Plan execution:
+
+terraform plan
+
+
+Apply:
+
+terraform apply -auto-approve
+
+
+Once applied → you will get EC2 details.
+
+🔥 Phase-3 — Add Security Group & SSH
+
+Modify main.tf:
+
+resource "aws_security_group" "web_sg" {
+  name        = "web-sg"
+  description = "Allow SSH & HTTP"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "web" {
+  ami           = "ami-0c02fb55956c7d316"
+  instance_type = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+
+  tags = {
+    Name = "terraform-web"
+  }
+}
+
+
+Apply again:
+
+terraform apply -auto-approve
+
+🔥 Phase-4 — Integrate Ansible
+
+Create inventory dynamically using output:
+
+output "public_ip" {
+  value = aws_instance.web.public_ip
+}
+
+
+Now run:
+
+terraform output public_ip
+
+
+Use that IP inside your Ansible inventory.ini
+
+Then run playbook:
+
+ansible-playbook -i inventory.ini install-nginx.yml
+
+
+You just created:
+
+🌟 Infrastructure provisioning (Terraform)
+🌟 Server configuration automation (Ansible)
+Interview Answer (use this exactly)
+
+In my labs, I provision infrastructure using Terraform — mainly EC2 with Security Groups.
+After provisioning, I integrate Ansible for configuration management to install packages like nginx, deploy config files, enable services, etc.
+This allows fully automated environment setup — provisioning + configuration — without manual steps.
+It reflects a real Infra + SRE workflow for production environments.
+
+This answer alone differentiates you from 70% candidates.
+
+Your Remaining Task
+
+Run:
+
+terraform init
+terraform apply -auto-approve
+terraform output public_ip
+
+
+Reply with:
+
+✔ Terraform successful + public IP
+OR paste output if errors occur (I will fix instantly).

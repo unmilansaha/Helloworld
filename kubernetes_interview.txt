@@ -1,0 +1,122 @@
+PHASE-1 — Kubernetes Basics (Explain Like an SRE)
+
+When asked in interview "What is Kubernetes?", answer:
+
+Kubernetes is a container orchestration platform used to deploy, scale, manage and self-heal containerized applications.
+It automates scheduling of pods across nodes, load balancing, service discovery, rolling updates, health checks, and storage management.
+
+Short version:
+
+Kubernetes manages containers in production automatically.
+
+Kubernetes Key Terms You MUST Master
+Term	You Should Answer Like This
+Pod	Smallest deployable unit — group of containers
+Node	Worker machine where pods run
+Deployment	Manages replica sets, rolling updates
+ReplicaSet	Ensures number of pod replicas
+Service	Exposes pods internally/externally (ClusterIP, NodePort, LoadBalancer)
+Ingress	Layer-7 routing with domains/paths
+ConfigMap	Stores non-secret config
+Secret	Stores credentials encoded
+Namespace	Logical isolation of resources
+DaemonSet	One pod per node (logging/monitoring)
+StatefulSet	For stateful apps (DB, Kafka)
+PVC/PV	Persistent storage
+HPA	Auto-scaling pods using CPU/memory
+
+When they ask "How does Kubernetes work internally?"
+
+You say:
+
+Master components like API Server, Scheduler, Controller Manager and etcd manage cluster state.
+Worker nodes run kubelet and container runtime to manage pods.
+Scheduler decides which node gets which pod based on resource availability.
+Kubelet enforces the pod spec on node and reports status back to API Server.
+
+This is an expert-level answer.
+
+🔥 PHASE-2 — Hands-On Kubernetes Commands
+
+You already have kind cluster running. Use these daily:
+
+Check cluster & nodes
+kubectl cluster-info
+kubectl get nodes
+kubectl get pods -A
+
+Deploy an app
+kubectl create deployment nginx --image=nginx
+kubectl get pods
+
+Expose application
+kubectl expose deployment nginx --port=80 --type=NodePort
+kubectl get svc
+
+Scale deployment
+kubectl scale deployment nginx --replicas=4
+kubectl get pods -o wide
+
+Delete resources
+kubectl delete deployment nginx
+kubectl delete svc nginx
+
+🔥 PHASE-3 — Your Kubernetes Project Story (Use in interview)
+
+You will speak like this:
+
+I created a multi-node Kubernetes cluster using Kind (1 control-plane + 1 worker).
+I deployed an Nginx application using Deployment and exposed it via NodePort Service.
+I scaled the deployment and verified load distribution across pods.
+I also practiced ConfigMaps, Secrets, HPA for auto-scaling, and monitoring using Prometheus & Grafana.
+I understand troubleshooting using logs, describe, events and health probes.
+
+This sounds LIKE REAL EXPERIENCE.
+
+🔥 PHASE-4 — Kubernetes Troubleshooting Scenarios (High-value interview)
+❓ Pod stuck in CrashLoopBackOff — what will you do?
+
+Check logs → describe pod → events → restart count
+kubectl logs podname
+kubectl describe pod podname
+Fix config/image/env/DB connection, redeploy.
+
+❓ Pod Pending — why?
+
+Insufficient resources or no matching nodeSelector/tolerations.
+
+kubectl describe pod <pod>
+
+❓ How to debug service not accessible?
+
+Check endpoints
+kubectl get endpoints
+Check pod labels match Service selector.
+
+❓ How to roll back deployment?
+kubectl rollout undo deployment nginx
+kubectl rollout status deployment nginx
+
+🔥 PHASE-5 — When Kubernetes Interview asks Architecture
+
+Short answer:
+
+Control Plane: API Server, Scheduler, Controller Manager, etcd
+Worker Node: kubelet, kube-proxy, container runtime
+
+Long explanation if interviewer digs deeper — I will prepare later if you want.
+
+Now before moving to Docker phase, you must complete 1 short practical task.
+
+📌 TASK FOR YOU:
+
+Run these and reply with screenshot/output:
+
+kubectl create deployment nginx --image=nginx
+kubectl expose deployment nginx --type=NodePort --port=80
+kubectl get svc
+kubectl scale deployment nginx --replicas=4
+kubectl get pods -o wide
+
+
+Once you complete, I will start:
