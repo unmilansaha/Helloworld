@@ -1,0 +1,178 @@
+⭐ "We use Docker for image building & packaging, and Kubernetes for running containers.
+
+Pods kept restarting (CrashLoopBackOff) after deployment:
+
+We had an incident where billing payments ervice kept going into crashloopback off on kubernetes
+I first checke dth pod status and events
+kkubectl get pods -n
+kubectl describe pod 
+kubectl logs 
+logs showed db connection failure becaue an environment 
+kubectl get pods -n prod
+kubectl describe pod billing-payment-service-xxxxx -n prod
+kubectl logs billing-payment-service-xxxxx -n prod --tail=50
+Logs showed DB connection failure because an environment variable was wrong.
+I updated the ConfigMap/Secret, rolled out a new Docker image with corrected config & applied deployment update:
+
+bash
+Copy code
+kubectl set image deployment/billing-payment-service billing=repo/billing-service:v2 -n prod
+kubectl rollout status deployment/billing-payment-service -n prod
+
+
+High CPU alert triggered on one microservice
+
+Story:
+
+Monitoring (Prometheus/Dynatrace) alerted that api-service pod CPU was over 90%.
+I checked pod resource usage:
+
+kubectl top pods -n prod
+kubectl describe pod api-service-xxx -n prod
+kubectl logs api-service-xxx -n prod
+
+
+Findings → Infinite retry loop after API timeout.
+Immediate mitigation was scaling pods and restarting rollout:
+
+kubectl scale deployment api-service --replicas=6 -n prod
+kubectl rollout restart deployment/api-service -n prod
+
+
+Long-term fix → Dev team fixed retry logic & I deployed a new Docker image version with resource limits:
+
+kubectl set image deployment/api-service api=repo/api-service:v3 -n prod
+
+
+CPU normalized and latency dropped.
+
+
+🐳➡☸ Scenario 3 (Image Size Optimization)
+Deployment was slow due to large Docker image
+
+During deployment, pods took long to pull image from registry.
+I checked image layers:
+
+docker history repo/app:latest
+
+
+I optimized Dockerfile using Alpine and multi-stage builds, pushed v2:
+
+docker build -t repo/app:v2 .
+docker push repo/app:v2
+
+
+Then updated Kubernetes deployment:
+
+kubectl set image deployment/app app=repo/app:v2 -n prod
+
+
+Image pull time improved drastically, rollout was faster.
+
+
+git clone <repo-url>          # download repo
+git pull                      # get latest changes
+git status                    # check modified files
+git add .                     # stage all changes
+git commit -m "message"       # commit changes
+git push                      # push to remote repo
+
+
+git branch <name>             # create branch
+git checkout <branch>         # switch branch
+git checkout -b <branch>      # create + switch
+git merge <branch>            # merge branch into current
+git pull origin main          # sync main latest changes
+
+git log                       # commit history
+git diff                      # show changes
+git diff <file>               # diff specific file
+git blame <file>              # who changed what & when
+git show <commit-id>          # inspect commit
+
+git revert <commit-id>        # safe rollback
+git reset --hard HEAD~1       # rollback last commit (destructive)
+git checkout <file>           # restore file
+
+SLI (Service Level Indicator)	A metric that measures service performance.	Technical metric (SRE/team)
+SLO (Service Level Objective)	Target threshold for that SLI.	SRE + Product team
+SLA (Service Level Agreement)	Contractual promise to customers with penalties.	Business/legal
+Quick way to memorize:
+
+SLI = What we measure
+SLO = Target of that measurement
+SLA = Legal commitment based on SLO
+
+2. Real-life Example (use this in interview)
+Concept	Example
+SLI	99.95% of requests return 200 OK
+SLO	Service must meet 99.9% availability per quarter
+SLA	If uptime drops below 99.5%, credit customer 10% bill refund
+
+linux commands:
+
+top               # Real-time CPU/memory usage
+htop              # Enhanced top (if installed)
+ps aux            # List running processes
+kill -9 <PID>     # Force kill process
+free -h           # Memory usage
+df -h             # Disk usage
+du -sh /var/log   # Folder size
+
+
+top               # Real-time CPU/memory usage
+htop              # Enhanced top (if installed)
+ps aux            # List running processes
+kill -9 <PID>     # Force kill process
+free -h           # Memory usage
+df -h             # Disk usage
+du -sh /var/log   # Folder size
+
+
+Service type in kubernetes --> cluster ip , nodeport and load balancer
+
+
+Argo CD:
+
+We once had deployment failure in ArgoCD due to wrong image tag pushed by CI.
+The pods went into ImagePullBackOff and ArgoCD showed Sync Failed.
+I checked the ArgoCD diff view, found the tag mismatch, updated manifest with correct image tag and pushed to Git.
+ArgoCD synced automatically, pods rolled out successfully, and I verified logs/metrics.
+Later I added tag validation in Jenkins pipeline & enabled PR review to prevent similar issues.
+
+Short + Real + Confident. Perfect for interview.
+
+ArgoCD OutOfSync Drift From Live Environment:
+
+🔥 Scenario 2 – ArgoCD OutOfSync Drift From Live Environment
+Problem:
+
+Pods were running with old config because of manual hotfix deployment.
+
+Action:
+
+ArgoCD showed OutOfSync state
+
+Compared live vs desired state using diff option
+
+Found env variable changed manually on cluster
+
+Fix:
+
+Reverted manual change OR updated Git manifest properly
+
+Synced ArgoCD → cluster aligned with repo
+
+Implemented GitOps discipline → no manual kubectl changes
+
+Result: State consistency restored and drift eliminated.
+
+
+
+TErraform :
+
+Once our AWS EKS was up and running, I used Terraform mainly to manage and update the infrastructure.
+For example, whenever microservice load increased, I modified the node group size or instance type, updated autoscaling settings, created new namespaces, and added IAM policies for app access.
+All these changes were done through Terraform instead of AWS console.
+I raise a PR, review the Terraform plan, and once approved the pipeline applies the changes to production
+

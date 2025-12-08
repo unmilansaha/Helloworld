@@ -1,0 +1,207 @@
+Hi, I'm Unmilan. I work as an SRE/Production Support Engineer at Rogers Telecom where I manage system reliability, deployments, monitoring and incident response for telecom billing platforms. I work with Linux, Jenkins, Git, Docker, Kubernetes (EKS), ArgoCD, Terraform, Ansible, Splunk and Dynatrace.
+Earlier we used Prometheus and Grafana dashboards for CPU, latency and billing job metrics, and now we are mostly using Dynatrace for APM, service-level tracing and alerting. My role includes handling Sev1 incidents end-to-end, automating operational tasks using Bash/Python, improving monitoring, and ensuring smooth operation of billing cycles and microservices running on cloud.
+
+Introduction:
+
+Hi, I’m Unmilan. I work as a Site Reliability / Production Support Engineer at Rogers Telecom. 
+My job is to keep telecom billing systems running smoothly and reliably. 
+I take care of deployments, monitoring, and incident response.
+
+I use tools like Linux, Jenkins, Git, Docker, Kubernetes (EKS), ArgoCD, Terraform, Ansible, Splunk, and Dynatrace.
+
+Earlier, we tracked system health with Prometheus and Grafana dashboards (CPU, latency, billing jobs). 
+Now, we mainly use Dynatrace for application monitoring, tracing, and alerts.
+
+My daily work includes:
+
+Handling critical incidents (Sev1) from start to finish
+
+Automating routine tasks with Bash and Python
+
+Improving monitoring and alerting systems
+
+Making sure billing cycles and cloud-based microservices run without issues
+
+Can you explain your project architecture and what part of it you handle?
+
+We work on a Telecom Billing Reliability platform. Core BRM billing runs on Linux VMs, 
+and supporting microservices like notification-service and usage-summary APIs run on AWS EKS. 
+Our CI/CD pipeline is built using Jenkins and Git,
+ where Jenkins builds Docker images and pushes them to AWS ECR, and ArgoCD handles GitOps-based deployment into Kubernetes.
+
+I take care of production reliability, deployments, Sev1 incident handling, Kubernetes pod troubleshooting, scaling,
+ config updates, and infra modifications using Terraform. I also automate operational activities using 
+ Ansible and Bash/Python scripts to reduce manual effort and speed up recovery.
+ 
+3. Can you walk me through your CI/CD pipeline end to end?
+How does a new code change go to production?
+
+Answer in steps — simple & clear.
+
+Use this template:
+
+Developer commits code
+
+Jenkins pipeline triggers
+
+Build → Test → Create Docker image
+
+Push to AWS ECR
+
+ArgoCD syncs manifest
+
+Deployment rolls out to EKS
+
+Validate pods/logs
+
+Rollback if needed
+
+When a developer pushes code to Git, Jenkins pipeline is triggered automatically. It runs build and unit tests, 
+then creates a Docker image and pushes it to AWS ECR. ArgoCD continuously watches the Git repo for manifest changes 
+and syncs the updated image tag to EKS. Once deployed, I verify pod health using kubectl get/describe/logs, monitor metrics
+ in Dynatrace, and if needed, 
+scale services or rollback using ArgoCD or previous image tag
+
+“We run all our billing and microservices on AWS EKS.
+Terraform is used to manage our cloud infrastructure.
+Whenever we need to increase capacity, add a new node group, update configurations, or make infra changes — we don’t do it manually in AWS console.
+Instead, I update the Terraform files, generate a plan, raise a pull request for review, and after approval the changes get applied to production through our CI/CD pipeline.”
+
+
+I used Ansible to automate repetitive operational tasks like log cleanup, patching, service restart, 
+config deployment and rolling updates.
+I work with playbooks, roles, handlers, inventory and vault.
+We always test in non-prod, use check mode and execute through pipeline for production.
+
+
+Scenario 1:Log cleaning 7 days ago
+
+We were getting frequent disk space alerts due to log growth.
+I wrote an Ansible playbook to delete old logs and restart the service only if required.
+Then we scheduled it via a Jenkins job with a weekly cron trigger, so it ran automatically and we could track every run in Jenkins.
+This reduced manual effort and prevented disk full issues in production
+
+Scenario 2 – Patching & OS updates
+
+Instead of manually updating Linux servers, I wrote playbooks to run yum update & reboot sequentially with 0 downtime.
+
+For patching, we used an Ansible rolling update approach.
+I configured serial: 1 in the playbook so only one server gets updated and rebooted at a time.
+After patching, the playbook waits for the service to come back healthy, then automatically moves to the next server.
+This helped us patch multiple production servers with zero downtime.
+
+wait_for condirion to check if the server one is up
+
+Scenario 3: Deploy config file for 10 billing servers if any changes.
+
+I created an Ansible playbook with a template and deployed config to all prod servers automatically.
+We pushed the change through Git → PR → Jenkins triggered playbook → config deployed across nodes uniformly.
+Handlers restarted the service only if config changed.
+This avoided manual errors and kept all servers consistent
+
+Why ansible pished model:
+
+Because Ansible connects to servers over SSH and pushes configurations/commands directly to them,
+ instead of requiring agents to pull configurations periodically
+ 
+ Scenario 5 – Secure Password Handling using Ansible Vault
+
+Problem:
+Database credentials were stored in config files.
+Security risk if someone sees sensitive data in repo.
+
+What you did:
+
+“We stored DB credentials in Ansible Vault, not in plain text.
+The encrypted file is decrypted only during execution time.
+This keeps passwords secure and audit compliant.”
+
+Scenario 6 – Self-Healing Script Automation
+
+Service occasionally crashed → manual restart needed → alerts waking team.
+
+What you did:
+
+“I created a health-check task + handler in Ansible which automatically restarts the service if it’s down.
+This reduced incident volume and improved uptime
+
+Can you rollback in Ansible?
+
+Not automatic like Terraform.
+We maintain rollback playbooks or keep previous config backups.
+
+
+Handlers are special tasks that run only when notified.
+If a task changes something, it sends a notify signal to a handler.
+For example, when a config file is updated, we notify the handler to restart the service.
+If no change occurs, the handler won’t run — helping maintain idempotency and avoid unnecessary restarts
+
+code :
+Ansible:
+
+handlerand notify:
+
+hosts:<>
+tasks:
+		-name : <new config changes>
+		   
+		notify: restart-app
+handlers:
+         name :resgtart-app
+		 service: 
+		 systemctl start all
+		 
+		 
+terraform :
+
+resource "aws_resource" "ec2" {
+ami = "ami_id"
+instance_type= "m5.large"
+}
+
+Kubernetes:
+
+APi version --> kind--> metadata--> spec with replicas-->selector -->template--> container-->
+
+StatefulSet is used for stateful applications where each pod needs a unique identity and persistent storage.
+Even after restart, pod names and volumes remain the same.
+It's used for databases or systems like Kafka, Cassandra, Redis.”
+
+Readiness Probe checks if the application is ready to serve traffic.
+If readiness fails, Kubernetes stops sending requests to that Pod but doesn’t restart it.
+
+Liveness Probe checks if the application is alive.
+If liveness fails, Kubernetes restarts the container automatically.
+
+In production, LoadBalancer is used for public exposure and ClusterIP for internal microservice communication
+
+
+In our environment at Rogers, Helm isn't used for deployments.
+We use GitOps with ArgoCD, where Kubernetes manifests are stored in Git and ArgoCD syncs them to the cluster.
+
+We commit → PR review → merge → ArgoCD deploys automatically.
+This gives us auditability, rollback, drift detection, and controlled production release
+
+Our workloads are stable and template complexity is low, so raw manifests + GitOps work well.
+Helm templates weren't necessary, and Git-based manifest control gave better governance and approvals
+
+Example 2: Workspace/Disk Full Error
+
+Problem: Builds queued, Jenkins node running out of space.
+Fix: Cleaned workspace & logs, used cleanWs() post-build step.
+
+Speak like this:
+
+"The Jenkins workspace got full and no new builds were running.
+I cleared old workspaces, enabled automatic workspace cleanup, and builds started successfully."
+
+Example 3: Credentials/Secret Misconfiguration
+
+Problem: Jenkins pipeline failing at authentication stage.
+Cause: Expired or wrong credentials for repo/registry.
+Fix: Updated credentials in Jenkins > reran build.
+
+Speak like this:
+
+"A pipeline was failing while pushing the image to the registry due to expired credentials.
+I updated the credentials in Jenkins credentials store and the pipeline ran fine."
