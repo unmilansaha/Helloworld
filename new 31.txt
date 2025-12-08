@@ -1,3 +1,9 @@
+I have around 9+ years of experience in Production Support and Site Reliability Engineering.
+Currently, I work at Rogers Telecom through Wipro, where I ensure the reliability and availability of telecom billing systems and microservices.
+I handle L2/L3 incidents, monitor system health, perform deployments, and work on automation to reduce manual tasks.
+I use tools like Git, Jenkins, Ansible, Terraform, ArgoCD, Kubernetes, and for monitoring/logs I work with Dynatrace, Splunk, and previously Prometheus + Grafana.
+I focus on maintaining SLOs, resolving production issues quickly, improving observability, and ensuring smooth billing cycles without failures.
+
 ⭐ "We use Docker for image building & packaging, and Kubernetes for running containers.
 
 Pods kept restarting (CrashLoopBackOff) after deployment:
@@ -176,3 +182,31 @@ For example, whenever microservice load increased, I modified the node group siz
 All these changes were done through Terraform instead of AWS console.
 I raise a PR, review the Terraform plan, and once approved the pipeline applies the changes to production
 
+One pod was stuck in Pending because PVC was not bound. I checked kubectl get pvc and status was Pending.
+ I created a StorageClass/PV and re-applied. Once PVC was Bound and mounted, the pod started Running."
+ 
+ Persistent volume and persistent colume claim
+ 
+We had an issue where one microservice was unable to reach another service.
+The application logs showed a DNS resolution error (getaddrinfo failure) — meaning the pod could not resolve the service name.
+
+To troubleshoot, I went inside the pod and tested DNS resolution:
+
+kubectl exec -it <pod-name> -n prod -- sh
+nslookup customer-profile-service
+curl http://customer-profile-service:8080
+
+
+nslookup failed → so I checked if the service and endpoints existed:
+
+kubectl get svc -n prod | grep customer-profile
+kubectl get endpoints customer-profile-service -n prod
+
+
+The service wasn’t in prod namespace, it was actually running in billing namespace.
+So DNS inside Kubernetes should be:
+
+customer-profile-service.billing.svc.cluster.local
+
+
+I updated the service URL/ConfigMap with correct namespace, redeployed, and the communication worked fine.
