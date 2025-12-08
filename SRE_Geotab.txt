@@ -64,8 +64,10 @@ scale services or rollback using ArgoCD or previous image tag
 
 “We run all our billing and microservices on AWS EKS.
 Terraform is used to manage our cloud infrastructure.
-Whenever we need to increase capacity, add a new node group, update configurations, or make infra changes — we don’t do it manually in AWS console.
-Instead, I update the Terraform files, generate a plan, raise a pull request for review, and after approval the changes get applied to production through our CI/CD pipeline.”
+Whenever we need to increase capacity, add a new node group, update configurations, or make infra changes —
+ we don’t do it manually in AWS console.
+Instead, I update the Terraform files, generate a plan,
+ raise a pull request for review, and after approval the changes get applied to production through our CI/CD pipeline.”
 
 
 I used Ansible to automate repetitive operational tasks like log cleanup, patching, service restart, 
